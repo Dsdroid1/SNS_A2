@@ -4,6 +4,7 @@
 #include <ctype.h>
 #include <math.h>
 #include <time.h>
+#include "des.h"
 
 int IP[] =
     {
@@ -129,7 +130,7 @@ int PC2[] =
 
 int SHIFTS[] = {1, 1, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 1};
 
-FILE *out;
+// FILE *out;
 int LEFT[17][32], RIGHT[17][32];
 int IPtext[64];
 int EXPtext[48];
@@ -321,49 +322,8 @@ void finalPermutation(int pos, int text)
     ENCRYPTED[i] = text;
 }
 
-void convertToBinary(int n)
+int *Encryption(int plain[])
 {
-    int k, m;
-    for (int i = 7; i >= 0; i--)
-    {
-        m = 1 << i;
-        k = n & m;
-
-        if (k == 0)
-        {
-            fprintf(out, "0");
-        }
-        else
-        {
-            fprintf(out, "1");
-        }
-    }
-}
-
-int convertCharToBit(long int n)
-{
-    FILE *inp = fopen("input.txt", "rb");
-    out = fopen("bits.txt", "wb+");
-    char ch;
-    int i = n * 8;
-
-    while (i)
-    {
-        ch = fgetc(inp);
-        if (ch == -1)
-        {
-            break;
-        }
-        i--;
-        convertToBinary(ch);
-    }
-    fclose(out);
-    fclose(inp);
-}
-
-void Encryption(long int plain[])
-{
-    out = fopen("cipher.txt", "ab+");
     for (int i = 0; i < 64; i++)
     {
         initialPermutation(i, plain[i]);
@@ -399,17 +359,18 @@ void Encryption(long int plain[])
         }
         finalPermutation(i, CIPHER[i]);
     }
+    int *CT;
+    CT = (int *)malloc(sizeof(int) * 64);
 
     for (int i = 0; i < 64; i++)
     {
-        fprintf(out, "%d", ENCRYPTED[i]);
+        CT[i] = ENCRYPTED[i];
     }
-    fclose(out);
+    return CT;
 }
 
-void Decryption(long int plain[])
+int *Decryption(int plain[])
 {
-    out = fopen("decrypted.txt", "ab+");
     for (int i = 0; i < 64; i++)
     {
         initialPermutation(i, plain[i]);
@@ -447,33 +408,13 @@ void Decryption(long int plain[])
         }
         finalPermutation(i, CIPHER[i]);
     }
-
+    int *PT;
+    PT = (int *)malloc(sizeof(int) * 64);
     for (int i = 0; i < 64; i++)
     {
-        fprintf(out, "%d", ENCRYPTED[i]);
+        PT[i] = ENCRYPTED[i];
     }
-
-    fclose(out);
-}
-
-void convertToBits(int ch[])
-{
-    int value = 0;
-    for (int i = 7; i >= 0; i--)
-    {
-        value += (int)pow(2, i) * ch[7 - i];
-    }
-    fprintf(out, "%c", value);
-}
-
-int bittochar()
-{
-    out = fopen("result.txt", "ab+");
-    for (int i = 0; i < 64; i = i + 8)
-    {
-        convertToBits(&ENCRYPTED[i]);
-    }
-    fclose(out);
+    return PT;
 }
 
 void key56to48(int round, int pos, int text)
@@ -584,50 +525,6 @@ void key64to48(unsigned int key[])
     }
 }
 
-void decrypt(long int n)
-{
-    FILE *in = fopen("cipher.txt", "rb");
-    long int plain[n * 64];
-    int i = -1;
-    char ch;
-
-    while (!feof(in))
-    {
-        ch = getc(in);
-        plain[++i] = ch - 48;
-    }
-
-    for (int i = 0; i < n; i++)
-    {
-        Decryption(plain + i * 64);
-        bittochar();
-    }
-
-    fclose(in);
-}
-
-void encrypt(long int n)
-{
-    FILE *in = fopen("bits.txt", "rb");
-
-    long int plain[n * 64];
-    int i = -1;
-    char ch;
-
-    while (!feof(in))
-    {
-        ch = getc(in);
-        plain[++i] = ch - 48;
-    }
-
-    for (int i = 0; i < n; i++)
-    {
-        Encryption(plain + 64 * i);
-    }
-
-    fclose(in);
-}
-
 void create16Keys()
 {
     FILE *pt = fopen("key.txt", "rb");
@@ -637,51 +534,58 @@ void create16Keys()
     while (!feof(pt))
     {
         ch = getc(pt);
-        key[i++] = ch - 48;
+        key[i++] = ch - '0';
     }
-
     key64to48(key);
     fclose(pt);
 }
 
-long int findFileSize()
+// Usable functions for assignment
+void KeyGen()
 {
-    FILE *inp = fopen("input.txt", "rb");
-    long int size;
-
-    if (fseek(inp, 0L, SEEK_END))
+    // Generate a random 64 bit key, which will be reduced to 56 bit in DES
+    char key[65];
+    srand(time(0));
+    for (int i = 0; i < 64; i++)
     {
-        perror("fseek() failed");
+        key[i] = rand() % 2 + '0';
     }
-    // size will contain number of chars in the input file.
-    else
+    key[64] = '\0';
+    FILE *fp;
+    fp = fopen("key.txt", "w");
+    if (fp != NULL)
     {
-        size = ftell(inp);
+        fprintf(fp, "%s", key);
     }
-    fclose(inp);
-
-    return size;
+    fclose(fp);
 }
 
-int main()
-{
-    // destroy contents of these files (from previous runs, if any)
-    out = fopen("result.txt", "wb+");
-    fclose(out);
-
-    out = fopen("decrypted.txt", "wb+");
-    fclose(out);
-
-    out = fopen("cipher.txt", "wb+");
-    fclose(out);
-
-    create16Keys();
-
-    long int n = findFileSize() / 8;
-    convertCharToBit(n);
-
-    encrypt(n);
-    decrypt(n);
-
-    return 0;
-}
+// int main()
+// {
+//     // KeyGen();
+//     create16Keys(); // Key in global vars
+//     printf("\n");
+//     int PT[64] = {0};
+//     printf("Plain Text:");
+//     for (int i = 0; i < 64; i++)
+//     {
+//         printf("%d", PT[i]);
+//     }
+//     int *CT;
+//     CT = Encryption(PT);
+//     printf("\nCipher Text:");
+//     for (int i = 0; i < 64; i++)
+//     {
+//         printf("%d", CT[i]);
+//     }
+//     printf("\nDecrypted text:");
+//     int *decrypted = Decryption(CT);
+//     for (int i = 0; i < 64; i++)
+//     {
+//         printf("%d", decrypted[i]);
+//     }
+//     printf("\n");
+//     free(CT);
+//     free(decrypted);
+//     return 0;
+// }
