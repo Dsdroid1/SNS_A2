@@ -525,9 +525,9 @@ void key64to48(unsigned int key[])
     }
 }
 
-void create16Keys()
+void create16Keys(char *filename)
 {
-    FILE *pt = fopen("key.txt", "rb");
+    FILE *pt = fopen(filename, "rb");
     unsigned int key[64];
     int i = 0, ch;
 

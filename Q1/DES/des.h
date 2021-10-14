@@ -8,7 +8,7 @@
 #include <time.h>
 
 void KeyGen();
-void create16Keys();
+void create16Keys(char *filename);
 // 64 bit block codes
 int *Encryption(int plain[]);
 int *Decryption(int plain[]);
