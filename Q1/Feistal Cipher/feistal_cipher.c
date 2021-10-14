@@ -144,7 +144,7 @@ void Pt2Binary(char *plain_text, int pt_size, char *binary, int key_size)
     {
         c = plain_text[i];
         // printf("%c\n", c);
-        for (int j = 0; j <= 7; j++)
+        for (int j = 0; j <= 7 && b_wtr >= 0; j++)
         {
             (c & (1 << j)) ? (binary[b_wtr] = '1') : (binary[b_wtr] = '0');
             // printf("%c ", binary[b_wtr]);
