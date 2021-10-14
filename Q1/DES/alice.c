@@ -28,7 +28,7 @@ int main()
         // scanf("%4999s", buf);
         gets(buf);
         int r = 40, cipherLen = 0;
-        int *cipherBits = CFB_mode_DES_Encrypt(buf, 40, &cipherLen);
+        int *cipherBits = CFB_mode_DES_Encrypt(buf, 40, &cipherLen, "key.txt");
         // Convert this to string
         char *str;
         str = (char *)malloc(sizeof(char) * (cipherLen + 1));

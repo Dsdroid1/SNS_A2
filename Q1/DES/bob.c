@@ -55,7 +55,7 @@ int main()
             cipherBits[i] = buf[i] - '0';
         }
         // Decrypt these to get the plain text
-        char *str = CFB_mode_DES_Decrypt(cipherBits, block_size, iRet);
+        char *str = CFB_mode_DES_Decrypt(cipherBits, block_size, iRet, "key.txt");
         printf("\nDecrypted text by Alice:%s", str);
         free(str);
         free(cipherBits);

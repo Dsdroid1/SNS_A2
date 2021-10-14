@@ -78,7 +78,7 @@ int *XOR_blocks(int *block1, int *block2, int block_size)
     return ans;
 }
 
-int *CFB_mode_DES_Encrypt(char *text, int block_size, int *length_of_CT)
+int *CFB_mode_DES_Encrypt(char *text, int block_size, int *length_of_CT, char *key_file)
 {
     int IV[64] = {0};
     int len = 0;
@@ -88,7 +88,7 @@ int *CFB_mode_DES_Encrypt(char *text, int block_size, int *length_of_CT)
     {
         printf("%d", data[i]);
     }
-    create16Keys("key.txt"); // Get all DES round keys
+    create16Keys(key_file); // Get all DES round keys
     int iters = len / block_size;
     int *cipherText = NULL, *Temp = NULL, *temp_block = NULL;
     cipherText = (int *)malloc(sizeof(int) * len);
@@ -119,12 +119,12 @@ int *CFB_mode_DES_Encrypt(char *text, int block_size, int *length_of_CT)
     return cipherText;
 }
 
-char *CFB_mode_DES_Decrypt(int *cipherText, int block_size, int len)
+char *CFB_mode_DES_Decrypt(int *cipherText, int block_size, int len, char *key_file)
 {
     int *plainText = NULL;
     plainText = (int *)malloc(sizeof(int) * len);
     int IV[64] = {0};
-    create16Keys("key.txt");
+    create16Keys(key_file);
     printf("\nBefore decryption:");
     for (int i = 0; i < len; i++)
     {
